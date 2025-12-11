@@ -19,7 +19,7 @@ DEFAULT_PORT = 5050
 DATA_DIR = "/opt/deq"
 CONFIG_FILE = f"{DATA_DIR}/config.json"
 HISTORY_DIR = f"{DATA_DIR}/history"
-VERSION = "0.9.1"
+VERSION = "0.9.2"
 
 # === DEFAULT CONFIG ===
 DEFAULT_HOST_DEVICE = {
@@ -393,7 +393,50 @@ def list_files(device, path="/"):
 
         # Sort: folders first, then by name
         files.sort(key=lambda f: (not f['is_dir'], f['name'].lower()))
-        return {"success": True, "path": path, "files": files}
+
+        # Get disk space for current path
+        storage = None
+        try:
+            if device.get('is_host'):
+                stat = os.statvfs(path)
+                total = stat.f_blocks * stat.f_frsize
+                free = stat.f_bavail * stat.f_frsize
+                used = total - free
+                storage = {
+                    "total": total,
+                    "used": used,
+                    "free": free,
+                    "percent": round((used / total) * 100) if total > 0 else 0
+                }
+            else:
+                # Remote via SSH - use df for the path
+                ssh_config = device.get('ssh', {})
+                user = ssh_config.get('user')
+                port = ssh_config.get('port', 22)
+                ip = device.get('ip')
+                if user:
+                    cmd = f"df -B1 '{path}' 2>/dev/null | tail -1"
+                    result = subprocess.run(
+                        ["ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=5",
+                         "-p", str(port), f"{user}@{ip}", cmd],
+                        capture_output=True, text=True, timeout=10
+                    )
+                    if result.returncode == 0 and result.stdout.strip():
+                        parts = result.stdout.strip().split()
+                        if len(parts) >= 4:
+                            total = int(parts[1]) if parts[1].isdigit() else 0
+                            used = int(parts[2]) if parts[2].isdigit() else 0
+                            free = int(parts[3]) if parts[3].isdigit() else 0
+                            storage = {
+                                "total": total,
+                                "used": used,
+                                "free": free,
+                                "percent": round((used / total) * 100) if total > 0 else 0
+                            }
+        except Exception:
+            pass  # Storage info is optional
+
+        return {"success": True, "path": path, "files": files, "storage": storage}
 
     except subprocess.TimeoutExpired:
         return {"success": False, "error": "SSH timeout"}
@@ -444,6 +487,18 @@ def file_operation(device, operation, paths, dest_device=None, dest_path=None, n
             success, err = run_cmd(f"mv '{old_path}' '{new_path}'")
             if not success:
                 return {"success": False, "error": f"Failed to rename: {err}"}
+            return {"success": True}
+
+        elif operation == 'mkdir':
+            if not new_name:
+                return {"success": False, "error": "Folder name required"}
+            if '/' in new_name or '\x00' in new_name:
+                return {"success": False, "error": "Invalid folder name"}
+            parent = paths[0] if paths else '/'
+            folder_path = f"{parent.rstrip('/')}/{new_name}".replace("'", "'\\''")
+            success, err = run_cmd(f"mkdir '{folder_path}'")
+            if not success:
+                return {"success": False, "error": f"Failed to create folder: {err}"}
             return {"success": True}
 
         elif operation == 'zip':
@@ -746,8 +801,8 @@ HTML_PAGE = '''<!DOCTYPE html>
             color: var(--text-primary);
             min-height: 100vh;
             padding: 24px;
-            font-size: 13px;
-            line-height: 1.5;
+            font-size: 12px;
+            line-height: 1.4;
         }
         
         .container {
@@ -767,6 +822,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             display: flex;
             align-items: center;
             padding: 8px;
+            color: var(--text-primary);
         }
 
         .logo svg {
@@ -924,7 +980,7 @@ HTML_PAGE = '''<!DOCTYPE html>
         }
 
         .layout-btn {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             min-width: 36px;
         }
@@ -1030,10 +1086,27 @@ HTML_PAGE = '''<!DOCTYPE html>
             filter: grayscale(1) brightness(0.7) contrast(1.2);
         }
 
-        .link-name {
-            font-size: 13px;
+        .link-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
         }
-        
+
+        .link-name {
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        .link-note {
+            font-size: 10px;
+            line-height: 1.2;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         /* Edit/Delete buttons (shared) */
         .link-edit, .link-delete,
         .task-edit, .task-delete,
@@ -1563,6 +1636,10 @@ HTML_PAGE = '''<!DOCTYPE html>
 
         .edit-mode .theme-section {
             display: block;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
         }
 
         .theme-grid {
@@ -1636,7 +1713,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             border-radius: 6px;
             color: var(--text-primary);
             font-family: inherit;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .theme-slider-row {
@@ -1674,7 +1751,7 @@ HTML_PAGE = '''<!DOCTYPE html>
 
         #theme-glass-value,
         #theme-blur-value {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-secondary);
             min-width: 40px;
         }
@@ -1793,7 +1870,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             padding: 12px;
             margin-bottom: 16px;
             font-size: 11px;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         .help-accordion.visible {
@@ -1823,7 +1900,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             font-weight: 500;
             color: var(--text-primary);
             margin-bottom: 8px;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .help-item a {
@@ -1974,6 +2051,8 @@ HTML_PAGE = '''<!DOCTYPE html>
             background: var(--bg-secondary);
             min-width: 0;
             border: 2px solid transparent;
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .fm-pane.active {
@@ -1989,6 +2068,39 @@ HTML_PAGE = '''<!DOCTYPE html>
         .fm-pane-header select {
             width: 100%;
             margin-bottom: 8px;
+        }
+
+        .fm-storage {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .fm-storage-text {
+            white-space: nowrap;
+        }
+
+        .fm-storage-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            overflow: hidden;
+            max-width: 80px;
+        }
+
+        .fm-storage-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .fm-storage-percent {
+            min-width: 32px;
+            text-align: right;
         }
 
         .fm-path {
@@ -2041,7 +2153,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .fm-size {
@@ -2075,7 +2187,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             border-radius: 6px;
             color: var(--text-primary);
             font-family: inherit;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.15s;
             position: relative;
@@ -2227,7 +2339,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             padding: 10px 12px;
             color: var(--text-primary);
             font-family: inherit;
-            font-size: 13px;
+            font-size: 12px;
             outline: none;
             -webkit-appearance: none;
             appearance: none;
@@ -2353,7 +2465,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             border-radius: 6px;
             padding: 10px 16px;
             font-family: inherit;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             cursor: pointer;
             transition: opacity 0.15s;
@@ -2389,7 +2501,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 12px 20px;
-            font-size: 13px;
+            font-size: 12px;
             z-index: 1001;
             opacity: 0;
             transition: opacity 0.2s;
@@ -2563,7 +2675,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             </div>
             <div class="theme-row">
                 <div class="theme-group theme-group-wide">
-                    <label class="theme-label">Glass Effect</label>
+                    <label class="theme-label">Transparency</label>
                     <div class="theme-slider-row">
                         <input type="range" id="theme-glass" min="0" max="100" value="0" class="theme-slider">
                         <span id="theme-glass-value">0%</span>
@@ -2618,6 +2730,10 @@ HTML_PAGE = '''<!DOCTYPE html>
                     <label class="form-label">Icon</label>
                     <input type="text" class="form-input" id="link-icon" placeholder="e.g. server, dash:proxmox, https://...">
                     <div class="form-hint">Lucide name, dash:name (dashboardicons.com), or image URL</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Note</label>
+                    <input type="text" class="form-input" id="link-note" placeholder="Optional, e.g. Runs on NAS">
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('link-modal')">Cancel</button>
@@ -2967,6 +3083,7 @@ HTML_PAGE = '''<!DOCTYPE html>
                 <div class="fm-pane" id="fm-left">
                     <div class="fm-pane-header">
                         <select class="form-input" id="fm-left-device" onchange="fmLoadFiles('left')"></select>
+                        <div class="fm-storage" id="fm-left-storage"></div>
                         <div class="fm-path" id="fm-left-path">/</div>
                     </div>
                     <div class="fm-list" id="fm-left-list"></div>
@@ -2974,6 +3091,7 @@ HTML_PAGE = '''<!DOCTYPE html>
                 <div class="fm-pane" id="fm-right">
                     <div class="fm-pane-header">
                         <select class="form-input" id="fm-right-device" onchange="fmLoadFiles('right')"></select>
+                        <div class="fm-storage" id="fm-right-storage"></div>
                         <div class="fm-path" id="fm-right-path">/</div>
                     </div>
                     <div class="fm-list" id="fm-right-list"></div>
@@ -2984,6 +3102,7 @@ HTML_PAGE = '''<!DOCTYPE html>
                 <button class="fm-btn" id="fm-copy-left" onclick="fmCopy('right', 'left')" disabled>← Copy</button>
                 <button class="fm-btn" id="fm-move-right" onclick="fmMove('left', 'right')" disabled>Move →</button>
                 <button class="fm-btn" id="fm-move-left" onclick="fmMove('right', 'left')" disabled>← Move</button>
+                <button class="fm-btn" id="fm-newfolder" onclick="fmNewFolder()" disabled>New Folder</button>
                 <button class="fm-btn" id="fm-rename" onclick="fmRename()" disabled>Rename</button>
                 <button class="fm-btn danger" id="fm-delete" onclick="fmDelete()" disabled>Delete</button>
                 <button class="fm-btn" id="fm-zip" onclick="fmZip()" disabled>Zip</button>
@@ -3364,7 +3483,10 @@ HTML_PAGE = '''<!DOCTYPE html>
                 <a href="${link.url}" target="_blank" class="link-item" data-id="${link.id}"
                    draggable="true" ondragstart="linkDragStart(event)" ondragover="linkDragOver(event)" ondragleave="linkDragLeave(event)" ondrop="linkDrop(event)" ondragend="linkDragEnd(event)">
                     ${getIcon(link.icon || 'link')}
-                    <span class="link-name">${link.name}</span>
+                    <div class="link-text">
+                        <span class="link-name">${link.name}</span>
+                        ${link.note ? `<span class="link-note">${link.note}</span>` : ''}
+                    </div>
                     <div class="link-edit" onclick="event.preventDefault(); editLink('${link.id}')">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
@@ -3743,6 +3865,7 @@ HTML_PAGE = '''<!DOCTYPE html>
         async function saveLink(e) {
             e.preventDefault();
             const id = document.getElementById('link-id').value || generateUUID();
+            const note = document.getElementById('link-note').value.trim();
             const link = {
                 id,
                 name: document.getElementById('link-name').value,
@@ -3750,7 +3873,8 @@ HTML_PAGE = '''<!DOCTYPE html>
                 icon: document.getElementById('link-icon').value || 'link',
                 order: config.links.length
             };
-            
+            if (note) link.note = note;
+
             const idx = config.links.findIndex(l => l.id === id);
             if (idx >= 0) config.links[idx] = link;
             else config.links.push(link);
@@ -3844,6 +3968,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             document.getElementById('link-name').value = link?.name || '';
             document.getElementById('link-url').value = link?.url || '';
             document.getElementById('link-icon').value = link?.icon || '';
+            document.getElementById('link-note').value = link?.note || '';
             openModal('link-modal');
         }
         
@@ -4281,11 +4406,14 @@ HTML_PAGE = '''<!DOCTYPE html>
                 if (res.success) {
                     state.files = res.files;
                     fmRenderList(pane);
+                    fmUpdateStorage(pane, res.storage);
                 } else {
                     listEl.innerHTML = `<div class="fm-error">${res.error}</div>`;
+                    fmUpdateStorage(pane, null);
                 }
             } catch (e) {
                 listEl.innerHTML = '<div class="fm-error">Failed to load</div>';
+                fmUpdateStorage(pane, null);
             }
 
             fmUpdateButtons();
@@ -4342,6 +4470,25 @@ HTML_PAGE = '''<!DOCTYPE html>
             document.getElementById('fm-right').classList.toggle('active', pane === 'right');
         }
 
+        function fmUpdatePath(pane) {
+            const state = fmState[pane];
+            const pathEl = document.getElementById(`fm-${pane}-path`);
+
+            // If exactly one file selected, show full path with filename
+            if (state.selected.size === 1) {
+                const idx = Array.from(state.selected)[0];
+                const file = state.files[idx];
+                if (file) {
+                    const fullPath = state.path === '/' ? `/${file.name}` : `${state.path}/${file.name}`;
+                    pathEl.textContent = fullPath;
+                    return;
+                }
+            }
+
+            // Otherwise show just the directory path
+            pathEl.textContent = state.path;
+        }
+
         function fmSelect(pane, idx) {
             const state = fmState[pane];
             const otherPane = pane === 'left' ? 'right' : 'left';
@@ -4351,6 +4498,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             if (fmState[otherPane].selected.size > 0) {
                 fmState[otherPane].selected.clear();
                 fmRenderList(otherPane);
+                fmUpdatePath(otherPane);
             }
 
             // Toggle selection
@@ -4361,6 +4509,7 @@ HTML_PAGE = '''<!DOCTYPE html>
             }
 
             fmRenderList(pane);
+            fmUpdatePath(pane);
             fmUpdateButtons();
         }
 
@@ -4398,6 +4547,9 @@ HTML_PAGE = '''<!DOCTYPE html>
             document.getElementById('fm-copy-left').disabled = rightSel === 0 || fmState.busy;
             document.getElementById('fm-move-right').disabled = leftSel === 0 || fmState.busy;
             document.getElementById('fm-move-left').disabled = rightSel === 0 || fmState.busy;
+
+            // New Folder: always enabled if not busy and pane is active
+            document.getElementById('fm-newfolder').disabled = !fmState.activePane || fmState.busy;
 
             // Rename: exactly one selection
             document.getElementById('fm-rename').disabled = totalSel !== 1 || fmState.busy;
@@ -4500,6 +4652,42 @@ HTML_PAGE = '''<!DOCTYPE html>
                 }
             } catch (e) {
                 toast('Rename failed', 'error');
+            }
+
+            fmState.busy = false;
+            fmUpdateButtons();
+        }
+
+        async function fmNewFolder() {
+            const pane = fmState.activePane;
+            const state = fmState[pane];
+
+            const folderName = prompt('Folder name:');
+            if (!folderName) return;
+
+            if (folderName.includes('/') || folderName.includes('\0')) {
+                toast('Invalid folder name', 'error');
+                return;
+            }
+
+            fmState.busy = true;
+            fmUpdateButtons();
+
+            try {
+                const res = await api(`device/${state.device}/files`, 'POST', {
+                    operation: 'mkdir',
+                    paths: [state.path],
+                    new_name: folderName
+                });
+
+                if (res.success) {
+                    toast('Folder created');
+                    fmLoadFiles(pane);
+                } else {
+                    toast(res.error || 'Failed to create folder', 'error');
+                }
+            } catch (e) {
+                toast('Failed to create folder', 'error');
             }
 
             fmState.busy = false;
@@ -4760,7 +4948,27 @@ HTML_PAGE = '''<!DOCTYPE html>
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
             if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-            return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+            if (bytes < 1024 * 1024 * 1024 * 1024) return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+            return (bytes / (1024 * 1024 * 1024 * 1024)).toFixed(1) + ' TB';
+        }
+
+        function fmUpdateStorage(pane, storage) {
+            const el = document.getElementById(`fm-${pane}-storage`);
+            if (!storage) {
+                el.innerHTML = '';
+                return;
+            }
+            const free = fmFormatSize(storage.free);
+            const total = fmFormatSize(storage.total);
+            const percent = storage.percent;
+            const color = getBarColor(percent);
+            el.innerHTML = `
+                <span class="fm-storage-text">${free} / ${total} free</span>
+                <div class="fm-storage-bar">
+                    <div class="fm-storage-fill" style="width: ${percent}%; background: ${color}"></div>
+                </div>
+                <span class="fm-storage-percent">${percent}%</span>
+            `;
         }
 
         function fmFormatDate(timestamp) {
@@ -5776,6 +5984,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                     return
                 result = file_operation(dev, operation, paths, dest_device=dest_dev, dest_path=dest_path)
             elif operation == 'rename':
+                new_name = data.get('new_name')
+                result = file_operation(dev, operation, paths, new_name=new_name)
+            elif operation == 'mkdir':
                 new_name = data.get('new_name')
                 result = file_operation(dev, operation, paths, new_name=new_name)
             elif operation in ('delete', 'zip'):
