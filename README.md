@@ -30,7 +30,7 @@ DeQ runs as root and has direct access to your system. That's what makes feature
 - **Scheduled Tasks** — Automated backups, wake and shutdown
 - **File Manager** — Dual-pane file browser, copy/move/upload between devices
 - **System Stats** — CPU, RAM, temperature, disk usage
-- **Theming** — Custom colors, wallpapers, and glass/blur effects
+- **Theming** — Custom colors, wallpapers, and transparency/blur effects
 - **PWA Support** — Install as an app on any device
 
 ## Installation
@@ -77,7 +77,7 @@ Each device can have:
 |---------|--------------|
 | **Wake-on-LAN** | Power on the device remotely |
 | **Quick Connect** | Buttons for RDP, VNC, or web interfaces |
-| **Docker** | Start/stop containers, with optional RDP/VNC/Web buttons |
+| **Docker** | Scan for containers or add manually, start/stop, optional RDP/VNC/Web buttons |
 | **SSH** | Enables stats and shutdown for remote devices |
 
 ### Understanding IP addresses
