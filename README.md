@@ -1,17 +1,26 @@
 # DeQ
-<p align="center">Rethinking homelab tools. Less complexity, more control.</p>
 
-<p align="center">A bare-metal admin deck with native Android companion app.<br>
-Full file manager. Task and Backup scheduling. Container control. Push alerts to your phone.</p>
+## <p align="center">A bare-metal admin deck with native Android companion app<br>
 
-<p align="center">No Node.js. No React. No Docker. No database. No dependencies.<br>
-One Python file. 300KB. 20MB RAM.</p>
+- Full file manager. Task and Backup scheduling. Container control. Push alerts to your phone
+- Vanilla code. No dependencies. One Python file. 300KB. 20MB RAM
 
-<p align="center"><strong>Runs on your main server. Runs on a Pi Zero. Your call.</strong></p>
 
 ![DeQ Hero](assets/DeQ-Hero.jpg)
 
 **Website:** [deq.rocks](https://deq.rocks) · **FAQ:** [deq.rocks/faq](https://deq.rocks/faq.html) · **Reddit:** [r/LowPowerHomelab](https://www.reddit.com/r/LowPowerHomelab/) · **Support:** [Patreon](https://patreon.com/deqrocks)
+
+## Android App
+
+<p align="center">
+<a href="https://play.google.com/store/apps/details?id=com.deq.app"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="80" alt="Get it on Google Play"></a>
+</p>
+
+Get notified when something goes wrong, even when you're not home. The free app monitors your homelab in the background and alerts you when devices go offline, containers stop, or backups fail.
+
+**DeQ Pro** (coming soon): Widgets, Live Wallpaper, Screen Saver with CPU load visualization, Android Auto. Turn an old phone into a wall-mounted status display.
+
+<p align="center"><a href="#mobile-app">See all app features →</a></p>
 
 ## Concept
 
@@ -134,6 +143,17 @@ sudo chmod 600 /root/.ssh/id_ed25519
 sudo ssh user@device-ip 'echo OK'
 ```
 
+**Enable passwordless sudo for shutdown (if needed on target devices):**
+
+DeQ uses `sudo systemctl poweroff` to power off remote devices. If shutdown doesn't work, the SSH user may need passwordless sudo. Run this on the target device:
+
+```bash
+echo "$USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl poweroff" | sudo tee /etc/sudoers.d/deq-shutdown
+sudo chmod 440 /etc/sudoers.d/deq-shutdown
+```
+
+This grants access only to the poweroff command, nothing else.
+
 ## Remote Access
 
 DeQ has no built-in authentication. For secure remote access, use [Tailscale](https://tailscale.com) or another VPN. Access DeQ via your Tailscale IP.
@@ -190,7 +210,7 @@ Native Android apps for DeQ - faster startup, background notifications, no brows
 
 **Compatible with Android 8+** - Perfect for repurposing old phones or tablets as wall-mounted status displays.
 
-**Download:** [Free app on GitHub](https://github.com/deqrocks/deq/releases/download/android-apk-v0.9.2/DeQ-v0.9.2.apk) · Pro app coming soon on Google Play
+**Download:** [Google Play](https://play.google.com/store/apps/details?id=com.deq.app) · [APK on GitHub](https://github.com/deqrocks/deq/releases/download/android-apk-v0.9.2/DeQ-v0.9.2.apk) · Pro app coming soon on Google Play
 
 #### Free vs Pro
 
@@ -224,7 +244,7 @@ DeQ Pro includes 5 widget styles:
 
 | Widget | Description |
 |--------|-------------|
-| **DeQ Less** | Minimal colored dots - green/red for online/offline, hue gradient for CPU/RAM/temp |
+| **DeQ Less** | Minimal colored dots - green/gray for online/offline |
 | **DeQ List** | Scrollable list with device names and stats |
 | **DeQ Ultra** | Q-symbols: rotated = online, normal = offline |
 | **DeQ Mega** | Green squares for online devices only |
@@ -238,6 +258,12 @@ Turn an old phone into a wall-mounted status display:
 
 - **DeQ Live**: Animated wallpaper showing device squares and container circles
 - **DeQ Ambient**: Screen saver (Daydream) with BCD binary clock, breathing animations, and drift movement for OLED burn-in protection
+
+**Color coding:**
+- **Offline devices**: Gray (#666666) - neutral, non-alarming
+- **Online devices**: Color indicates CPU load - green (idle) → orange → red (100% load)
+- **Stopped containers**: Gray circle
+- **Running containers**: Green circle
 
 Both feature pure black backgrounds (#000000) for OLED efficiency and auto-scaling for any number of devices.
 
@@ -307,6 +333,14 @@ Or as single command
 
 ```bash
 sudo systemctl stop deq && sudo systemctl disable deq && sudo rm /etc/systemd/system/deq.service && sudo rm -rf /opt/deq && sudo systemctl daemon-reload
+```
+
+**Clean up remote devices (optional):**
+
+If you configured passwordless sudo for shutdown on target devices, you can remove it:
+
+```bash
+sudo rm /etc/sudoers.d/deq-shutdown
 ```
 
 ## Disclaimer
