@@ -12,13 +12,15 @@
 
 ## Android App
 
+Native companion app with background monitoring and push notifications when devices go offline, containers stop, or backups fail.
+
+**DeQ Pro** adds custom polling intervals, widgets, live wallpaper, screen saver with CPU load visualization, and Android Auto. Your purchase keeps this project alive as a full-time effort.
+
 <p align="center">
-<a href="https://play.google.com/store/apps/details?id=com.deq.app"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="80" alt="Get it on Google Play"></a>
+<a href="https://play.google.com/store/apps/details?id=com.deq.app.pro"><img src="https://img.shields.io/badge/Pro_(€6.99)-Google_Play-2ed573?style=for-the-badge&logo=google-play" alt="DeQ Pro on Google Play"></a>
+<a href="https://play.google.com/store/apps/details?id=com.deq.app"><img src="https://img.shields.io/badge/Free-Google_Play-414141?style=for-the-badge&logo=google-play" alt="DeQ Free on Google Play"></a>
+<a href="https://github.com/deqrocks/deq/releases"><img src="https://img.shields.io/badge/Free-GitHub_Releases-414141?style=for-the-badge&logo=github" alt="Free APK on GitHub"></a>
 </p>
-
-Get notified when something goes wrong, even when you're not home. The free app monitors your homelab in the background and alerts you when devices go offline, containers stop, or backups fail.
-
-**DeQ Pro** (coming soon): Widgets, Live Wallpaper, Screen Saver with CPU load visualization, Android Auto. Turn an old phone into a wall-mounted status display.
 
 <p align="center"><a href="#mobile-app">See all app features →</a></p>
 
@@ -210,11 +212,11 @@ Native Android apps for DeQ - faster startup, background notifications, no brows
 
 **Compatible with Android 8+** - Perfect for repurposing old phones or tablets as wall-mounted status displays.
 
-**Download:** [Google Play](https://play.google.com/store/apps/details?id=com.deq.app) · [APK on GitHub](https://github.com/deqrocks/deq/releases/download/android-apk-v0.9.2/DeQ-v0.9.2.apk) · Pro app coming soon on Google Play
+**Download:** [Google Play](https://play.google.com/store/apps/details?id=com.deq.app) · [APK on GitHub](https://github.com/deqrocks/deq/releases/download/android-apk-v0.9.2/DeQ-v0.9.2.apk) · [Pro on Google Play](https://play.google.com/store/apps/details?id=com.deq.app.pro)
 
 #### Free vs Pro
 
-| Feature | DeQ (Free) | DeQ Pro (€4.99) |
+| Feature | DeQ (Free) | DeQ Pro (€6.99) |
 |---------|------------|-----------------|
 | WebView Dashboard | ✓ | ✓ |
 | Background Polling | 30 min | custom |
