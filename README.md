@@ -3,12 +3,31 @@
 ## <p align="center">A bare-metal admin deck with native Android companion app<br>
 
 - Full file manager. Task and Backup scheduling. Container control. Push alerts to your phone
-- Vanilla code. No dependencies. One Python file. 300KB. 20MB RAM
+- Vanilla code. No dependencies. One Python file 300KB. 20MB RAM
 
 
 ![DeQ Hero](assets/DeQ-Hero.jpg)
 
 **Website:** [deq.rocks](https://deq.rocks) · **FAQ:** [deq.rocks/faq](https://deq.rocks/faq.html) · **Reddit:** [r/LowPowerHomelab](https://www.reddit.com/r/LowPowerHomelab/) · **Support:** [Patreon](https://patreon.com/deqrocks)
+
+## Basics You Need to Know
+- The server.py lives on your server. It offers access to DeQ's dashboard via your browser. It wraps SSH commands into a User interface.
+- The Android companion app connects to that server.py and polls it for stats.
+- By using a VPN like Tailscale you can remote control or schedule your machines from anywhere and get reliable notifications by setting alert thresholds.
+- Neither the server.py, nor the app ever phone home or collect your data.
+- The server.py runs SSH commands as root. Hide it behind a VPN! Do not expose to public internet!
+- For controlling other devices in your network you MUST exchange keypairs first. Please exactly follow the instructions when running the install.sh.
+
+## Features
+
+- **Android Companion app** - free app for your smartphone to manage your servers or get notified when things go wrong
+- **Device Control** - Wake-on-LAN, shutdown, Docker start/stop
+- **Scheduled Tasks** - Automated backups, wake and shutdown
+- **File Manager** - Dual-pane file browser, copy/move/upload between devices
+- **System Stats** - CPU, RAM, temperature, disk usage
+- **Quick Links** - Bookmarks to your services with custom icons (Lucide or Dashboard Icons)
+- **Theming** - Custom colors, wallpapers, and transparency/blur effects
+- **PWA Support** - Install as web app on any desktop or smartphone
 
 ## Android App
 
@@ -42,17 +61,6 @@ The security model is "trusted tool on a trusted network." DeQ assumes you're be
 
 - Never expose DeQ to the public internet
 - Use Tailscale, WireGuard, or another VPN for remote access
-
-## Features
-
-- **Android Companion app** - free app for your smartphone to manage your servers or get notified when things go wrong
-- **Device Control** - Wake-on-LAN, shutdown, Docker start/stop
-- **Scheduled Tasks** - Automated backups, wake and shutdown
-- **File Manager** - Dual-pane file browser, copy/move/upload between devices
-- **System Stats** - CPU, RAM, temperature, disk usage
-- **Quick Links** - Bookmarks to your services with custom icons (Lucide or Dashboard Icons)
-- **Theming** - Custom colors, wallpapers, and transparency/blur effects
-- **PWA Support** - Install as web app on any desktop or smartphone
 
 ## Installation
 
