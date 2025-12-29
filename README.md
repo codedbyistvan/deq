@@ -8,7 +8,7 @@
 
 ![DeQ Hero](assets/DeQ-Hero.jpg)
 
-**Website:** [deq.rocks](https://deq.rocks) · **FAQ:** [deq.rocks/faq](https://deq.rocks/faq.html) · **Reddit:** [r/LowPowerHomelab](https://www.reddit.com/r/LowPowerHomelab/) · **Support:** [Patreon](https://patreon.com/deqrocks)
+**Website:** [deq.rocks](https://deq.rocks) · **FAQ:** [deq.rocks/faq](https://deq.rocks/faq.html) · **Support:** [Patreon](https://patreon.com/deqrocks)
 
 ## Basics You Need to Know
 - The server.py lives on your server. It offers access to DeQ's dashboard via your browser. It wraps SSH commands into a User interface.
