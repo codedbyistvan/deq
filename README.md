@@ -34,7 +34,7 @@
 
 Native companion app with background monitoring and push notifications when devices go offline, containers stop, or backups fail.
 
-**DeQ Pro** adds custom polling intervals, widgets, live wallpaper, screen saver with CPU load visualization, and Android Auto. Your purchase keeps this project alive as a full-time effort.
+**DeQ Pro** adds custom polling intervals, widgets, live wallpaper, screen saver, Android Auto, and Sleep With Me automation. Your purchase keeps this project alive as a full-time effort.
 
 <p align="center">
 <a href="https://play.google.com/store/apps/details?id=com.deq.app.pro"><img src="https://img.shields.io/badge/Pro_(€6.99)-Google_Play-2ed573?style=for-the-badge&logo=google-play" alt="DeQ Pro on Google Play"></a>
@@ -283,6 +283,7 @@ Native Android apps for DeQ - faster startup, background notifications, no brows
 | Live Wallpaper | ✗ | ✓ |
 | Screen Saver (Daydream) | ✗ | ✓ |
 | Android Auto | ✗ | ✓ |
+| Sleep With Me | ✗ | ✓ |
 
 **Why a paid version?**
 
@@ -294,6 +295,7 @@ Unlike Patreon tiers with "exclusive updates" or "Discord access", the paid app 
 - **Lock Screen Widgets**: Same widgets on your lock screen (Android 16+)
 - **Live Wallpaper**: Animated status display as your home screen background
 - **Screen Saver**: Ambient display with BCD clock when charging - perfect for a wall-mounted status display
+- **Sleep With Me**: Automate your homelab based on your phone's charging state - sleep when you sleep, wake when you wake
 
 Your support keeps this project alive as a full-time effort.
 
@@ -325,6 +327,27 @@ Turn an old phone into a wall-mounted status display:
 - **Running containers**: Green circle
 
 Both feature pure black backgrounds (#000000) for OLED efficiency and auto-scaling for any number of devices.
+
+#### Sleep With Me
+<p align="center"><img src="assets/DeQ-sleep-with-me-plug-in.jpg" width="350"> <img src="assets/DeQ-sleep-with-me-unplug.jpg" width="350"></p>
+
+Automatically put your homelab to sleep when you go to bed, wake it up when you get up - triggered by your phone's charging state.
+
+**How it works:**
+- **Plug in at night** → Selected devices suspend/shutdown, containers stop
+- **Unplug in morning** → Selected devices wake up, containers start
+
+**Configuration:**
+| Setting | Description |
+|---------|-------------|
+| Active Window | Time range when feature is active (e.g., 22:00 - 08:00) |
+| Delay | Minutes to wait before executing (time to unplug if needed) |
+| Plug tab | Select containers to stop, devices to suspend or shutdown |
+| Unplug tab | Select containers to start, devices to wake |
+
+The feature checks at window start - even if you plug in before bedtime, devices won't sleep until the window begins.
+
+**Requirements:** SSH access for remote devices, Wake-on-LAN for devices you want to wake, battery optimization disabled for DeQ.
 
 ### iOS
 
