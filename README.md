@@ -76,10 +76,8 @@ For example, the Android app can automatically put selected containers or server
 to sleep when you plug in your phone at night —
 and wake them again when you unplug it in the morning.
 
-
----
 ![DeQ Connectivity](assets/DeQ-connectivity.svg)
-
+---
 ## Free Android App
 <p align="center">
 <img src="assets/DeQ-notifications.jpg" width="280">
