@@ -19,6 +19,21 @@ connected to a native Android app, Wear OS, and Android Auto.
 <a href="https://patreon.com/deqrocks">Patreon</a>
 </p>
 
+## Table of Contents
+
+- [Features](#features)
+- [Concept](#concept)
+  - [Ambitions](#ambitions)
+  - [Architecture](#architecture)
+  - [Connectivity](#connectivity)
+- [Free Android App](#free-android-app)
+- [Paid Android Pro App](#paid-android-pro-app)
+- [Installation](#installation)
+- [Screenshots](#screenshots)
+- [License](#license)
+- [Credits](#credits)
+<br><br>
+
 ## Features
 
 - **Onboarding** – Automatic device and container discovery
@@ -53,13 +68,11 @@ It lives on your server and acts as the entire control layer.
 What makes it powerful — yet lightweight — is its restraint.
 DeQ is essentially SSH commands wrapped in a thin, vanilla Python shell.
 There are no dependencies beyond Linux and Python.
-
 The same file serves a dashboard-like web interface.
 It is mobile-first, responsive, and accessible from any browser.
 
 We deliberately restrict `server.py` to a maximum size of 500 KB.
 It currently sits at around 350 KB.
-
 A typical fresh installation, managing a few devices, containers, and tasks,
 uses roughly 20 MB of RAM and virtually no CPU.
 <br><br>
@@ -176,7 +189,10 @@ The installer asks a few questions and gives you your access URL.
 <p align="center"><em>User onboarding wizard</em></p>
 
 <p align="center"><img src="assets/DeQ-File-Manager.jpg" width="700"></p>
-<p align="center"><em>Dual-pane file manager</em></p>
+<p align="center"><em>Dual-pane file manager (desktop)</em></p>
+
+<p align="center"><img src="assets/app-free-filemanager.jpg" width="280"></p>
+<p align="center"><em>Dual-pane file manager (phone)</em></p>
 
 <p align="center"><img src="assets/DeQ-Task-Wizard.jpg" width="700"></p>
 <p align="center"><em>Task scheduler</em></p>
