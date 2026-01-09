@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """
 DeQ - Alles schläft, einer wacht.
-A mighty pocket rocket for your homelab. Breaking conventions - single file, no Docker, raw control.
-Control devices, view stats, manage links and files - all in one place.
 USE BEHIND VPN ONLY! DO NOT EXPOSE TO PUBLIC INTERNET!
 
 """
@@ -35,7 +33,7 @@ SCRIPTS_DIR = f"{DATA_DIR}/scripts"
 PASSWORD_FILE = f"{DATA_DIR}/.password"
 SESSION_SECRET_FILE = f"{DATA_DIR}/.session_secret"
 SESSION_COOKIE_NAME = "deq_session"
-VERSION = "0.9.9"
+VERSION = "0.9.10"
 
 # SSH ControlMaster for connection reuse (reduces overhead when File Manager makes many SSH calls)
 SSH_CONTROL_OPTS = ["-o", "ControlMaster=auto", "-o", "ControlPath=/tmp/deq-ssh-%r@%h:%p", "-o", "ControlPersist=60", "-o", "ServerAliveInterval=10", "-o", "ServerAliveCountMax=2"]
@@ -2004,15 +2002,8 @@ HTML_PAGE = '''<!DOCTYPE html>
         }
 
         .edit-mode .icon-btn.section-add,
-        .edit-mode .icon-btn.section-add svg,
-        .edit-mode .layout-btn {
+        .edit-mode .icon-btn.section-add svg {
             color: var(--text-primary);
-        }
-
-        .layout-btn {
-            font-size: 12px;
-            font-weight: 500;
-            min-width: 36px;
         }
 
         /* Links */
@@ -3888,9 +3879,6 @@ HTML_PAGE = '''<!DOCTYPE html>
                     <button class="icon-btn section-add section-toggle" id="links-toggle" title="Hide section" onclick="toggleSection('links')">
                         <i data-lucide="eye-off"></i>
                     </button>
-                    <button class="icon-btn section-add layout-btn" id="link-layout-btn" title="Change layout" onclick="cycleLinkLayout()">
-                        <span id="link-layout-label">eco</span>
-                    </button>
                     <button class="icon-btn section-add" id="mono-toggle" title="Toggle monochrome icons" onclick="toggleMonochrome()">
                         <i data-lucide="palette"></i>
                     </button>
@@ -4788,32 +4776,6 @@ HTML_PAGE = '''<!DOCTYPE html>
         }
 
         // === Render Functions ===
-        const LINK_LAYOUTS = ['eco', '1/4', '2/4', '4/4'];
-
-        function applyLinkLayout() {
-            const grid = document.getElementById('cards-grid');
-            const layout = config.settings.link_layout || 'eco';
-            const label = document.getElementById('link-layout-label');
-
-            // Remove all layout classes
-            grid.classList.remove('layout-1-4', 'layout-2-4', 'layout-4-4');
-
-            // Apply current layout
-            if (layout === '1/4') grid.classList.add('layout-1-4');
-            else if (layout === '2/4') grid.classList.add('layout-2-4');
-            else if (layout === '4/4') grid.classList.add('layout-4-4');
-
-            if (label) label.textContent = layout;
-        }
-
-        function cycleLinkLayout() {
-            const current = config.settings.link_layout || 'eco';
-            const idx = LINK_LAYOUTS.indexOf(current);
-            const next = LINK_LAYOUTS[(idx + 1) % LINK_LAYOUTS.length];
-            config.settings.link_layout = next;
-            applyLinkLayout();
-            saveConfig();
-        }
 
         function toggleSection(section) {
             const key = `show_${section}`;
@@ -5059,7 +5021,6 @@ HTML_PAGE = '''<!DOCTYPE html>
                     <div class="link-delete" onclick="event.preventDefault(); deleteLink('${link.id}')">${ICON_DELETE}</div>
                 </a>
             `).join('');
-            applyLinkLayout();
             refreshIcons();
         }
 
